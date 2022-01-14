@@ -33,7 +33,7 @@ class ArtificialTrend extends Component{
 
   //APIキー取得
   get_API_KEY(){
-    return "FX1Q4Ui8pG7bMwh3exU6mZEd6azQNVlpXsYi4pcs";
+    
   }
 
   //チェックボックスの雛形
@@ -61,7 +61,7 @@ class ArtificialTrend extends Component{
     }
     //削除
     else{
-      this.remove_series()
+      this.remove_series(id)
     }
     //保存
     this.setState({
@@ -76,7 +76,9 @@ class ArtificialTrend extends Component{
     })
     .then(response => response.json())
     .then(json => {
+      //年度
       var categories = [];
+      //人口
       var num = [];
       Object.keys(json.result.data[0].data).forEach(i => {
         categories.push(json.result.data[0].data[i].year);
@@ -86,7 +88,7 @@ class ArtificialTrend extends Component{
         name: this.state.cities[id],
         data: num,
       };
-      console.debug(new_series)
+      //初回のみ更新
       if(this.state.categories.length === 0){
         this.setState({
           categories: categories
@@ -100,7 +102,15 @@ class ArtificialTrend extends Component{
 
   //データ削除
   remove_series(id){
-
+    const series_copy = this.state.series.slice();
+    for(var i=0; i<series_copy.length; i++){
+      if(series_copy[i].name === this.state.cities[id]){
+        series_copy.splice(i, 1);
+      }
+    }
+    this.setState({
+      series: series_copy
+    });
   }
 
   //グラフの表示
