@@ -1,12 +1,16 @@
 import './App.css';
 import React from 'react';
 import { Component } from 'react/cjs/react.production.min';
+import Highcharts, { objectEach } from 'highcharts';
+import HighchartsReact from 'highcharts-react-official';
 
 class ArtificialTrend extends Component{
   constructor(props) {
     super(props);
     this.state = {
       cities: [],
+      series: [],
+      categories: [],
       city_flags: Array(47).fill(false)
     };
   }
@@ -33,8 +37,7 @@ class ArtificialTrend extends Component{
   }
 
   //チェックボックスの雛形
-  check_box(id, city){
-    console.debug(id);
+  make_check_box(id, city){
     return(
       <div class="checkbox">
         <input 
@@ -47,15 +50,81 @@ class ArtificialTrend extends Component{
     );
   }
 
-  //flagの反転
+  //反転
   toggle(id){
     var flag_copy = this.state.city_flags.slice();
     //更新
     flag_copy[id] = !flag_copy[id];
+    //追加
+    if(!this.state.city_flags[id]){
+      this.get_series(id)
+    }
+    //削除
+    else{
+      this.remove_series()
+    }
     //保存
     this.setState({
       city_flags: flag_copy
     })
+  }
+
+  //データ取得
+  get_series(id){
+    fetch("https://opendata.resas-portal.go.jp/api/v1/population/composition/perYear?cityCode=-&prefCode="+String(id+1), {
+      headers: {"X-API-KEY": this.get_API_KEY()}
+    })
+    .then(response => response.json())
+    .then(json => {
+      var categories = [];
+      var num = [];
+      Object.keys(json.result.data[0].data).forEach(i => {
+        categories.push(json.result.data[0].data[i].year);
+        num.push(json.result.data[0].data[i].value);
+      });
+      const new_series = {
+        name: this.state.cities[id],
+        data: num,
+      };
+      console.debug(new_series)
+      if(this.state.categories.length === 0){
+        this.setState({
+          categories: categories
+        })
+      }
+      this.setState({
+        series: [...this.state.series, new_series]
+      });
+    })
+  }
+
+  //データ削除
+  remove_series(id){
+
+  }
+
+  //グラフの表示
+  make_graph(){
+    const options = {
+      title: {
+        text: "人口推移"
+      },
+      xAxis: {
+        title: {
+          text: "年度"
+        },
+        categories: this.state.categories
+      },
+      yAxis: {
+        title: {
+          text: "人口数"
+        }
+      },
+      series: this.state.series
+    }
+    return(
+      <HighchartsReact highcharts={Highcharts} options={options} />
+    )
   }
 
   //表示
@@ -66,7 +135,10 @@ class ArtificialTrend extends Component{
       <div>
         <div>都道府県</div>
         <div class="checkbox_wrapper">
-          {list.map((city, i) => (this.check_box(i, city)))}
+          {list.map((city, i) => (this.make_check_box(i, city)))}
+        </div>
+        <div>
+          {this.make_graph()}
         </div>
       </div>
     )
