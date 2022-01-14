@@ -23,14 +23,13 @@ class ArtificialTrend extends Component{
       for(var i=0; i<json.result.length; i++){
         tmp_cities.push(json.result[i].prefName)
       }
-      this.setState({cities: tmp_cities}, ()=>{
-        console.debug(this.state.cities)
-      })
+      this.setState({cities: tmp_cities}, ()=>{})
     });
   }
 
+  //APIキー取得
   get_API_KEY(){
-    
+    return "FX1Q4Ui8pG7bMwh3exU6mZEd6azQNVlpXsYi4pcs";
   }
 
   //チェックボックスの雛形
@@ -41,16 +40,22 @@ class ArtificialTrend extends Component{
         <input 
           type="checkbox"
           checked={this.state.city_flags[id]}
-          onChange={this.toggle()}
+          onChange={() => this.toggle(id)}
         />
           {city}
       </div>
     );
   }
 
-  //on/off反転
-  toggle(){
-
+  //flagの反転
+  toggle(id){
+    var flag_copy = this.state.city_flags.slice();
+    //更新
+    flag_copy[id] = !flag_copy[id];
+    //保存
+    this.setState({
+      city_flags: flag_copy
+    })
   }
 
   //表示
